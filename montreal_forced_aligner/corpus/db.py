@@ -741,7 +741,7 @@ class PhoneInterval(Base):
     begin = Column(Float, nullable=False, index=True)
     end = Column(Float, nullable=False)
     label = Column(String, nullable=False)
-    utterance_id = Column(Integer, ForeignKey("utterance.id"), nullable=False)
+    utterance_id = Column(Integer, ForeignKey("utterance.id"), nullable=False, index=True)
     utterance: Utterance = relationship("Utterance", back_populates="phone_intervals")
 
     @classmethod
@@ -789,7 +789,7 @@ class WordInterval(Base):
     begin = Column(Float, nullable=False, index=True)
     end = Column(Float, nullable=False)
     label = Column(String, nullable=False)
-    utterance_id = Column(Integer, ForeignKey("utterance.id"), nullable=False)
+    utterance_id = Column(Integer, ForeignKey("utterance.id"), nullable=False, index=True)
     utterance: Utterance = relationship("Utterance", back_populates="word_intervals")
 
     @classmethod

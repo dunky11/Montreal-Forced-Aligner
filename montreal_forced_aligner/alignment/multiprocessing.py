@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Dict, List, Union
 import sqlalchemy.engine
 from sqlalchemy.orm import Session, joinedload, load_only, subqueryload
 
-from montreal_forced_aligner.corpus.db import Dictionary, Phone, Speaker, Utterance
+from montreal_forced_aligner.corpus.db import Dictionary, Phone, Speaker, Utterance, WordInterval, PhoneInterval
 from montreal_forced_aligner.data import (
     CtmInterval,
     MfaArguments,
@@ -844,24 +844,29 @@ def construct_output_tiers(
     data = {}
     utterances = (
         session.query(Utterance)
-        .options(
-            subqueryload(Utterance.word_intervals),
-            subqueryload(Utterance.phone_intervals),
-            joinedload(Utterance.speaker).load_only(Speaker.name),
-        )
         .filter_by(file_id=file_id)
+        .options(
+            # subqueryload(Utterance.word_intervals), 
+            # subqueryload(Utterance.phone_intervals),
+            joinedload(Utterance.speaker).load_only(Speaker.name),
+        )        
     )
+    
     for utt in utterances:
+        word_intervals = session.query(WordInterval).filter_by(utterance_id=utt.id)
+        phone_intervals = session.query(PhoneInterval).filter_by(utterance_id=utt.id)
         if utt.speaker.name not in data:
             data[utt.speaker.name] = {"words": [], "phones": []}
-        for wi in utt.word_intervals:
+        # for wi in utt.word_intervals:
+        for wi in word_intervals:
             data[utt.speaker.name]["words"].append(CtmInterval(wi.begin, wi.end, wi.label, utt.id))
 
-        for pi in utt.phone_intervals:
+        # for pi in utt.phone_intervals:
+        for pi in phone_intervals:
             data[utt.speaker.name]["phones"].append(
                 CtmInterval(pi.begin, pi.end, pi.label, utt.id)
             )
-    return data
+    return data 
 
 
 def construct_output_path(
